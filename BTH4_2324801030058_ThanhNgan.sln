@@ -75,6 +75,62 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductService.Api", "Produ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductService.Test", "ProductService\ProductService.Test\ProductService.Test.csproj", "{A78157D7-6475-48D2-A150-AFDD6D7489E6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorWasmClient", "BlazorWasmClient", "{9CE148F2-AF56-F956-698D-C38496F63749}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorWasmClient", "BlazorWasmClient\BlazorWasmClient.csproj", "{FF83AD0F-407E-43CE-A894-565A94A6A6A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AgentPortalApiGateway", "AgentPortalApiGateway", "{3CC1FCCB-28A9-B461-315A-3E15DD1501B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentPortalApiGateway", "AgentPortalApiGateway\AgentPortalApiGateway.csproj", "{E24C7037-55AF-4422-8F53-7F2CD59AA215}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eureka-server", "eureka-server", "{A1111111-1111-4111-8111-111111111111}"
+	ProjectSection(SolutionItems) = preProject
+		eureka-server\build.gradle = eureka-server\build.gradle
+		eureka-server\Dockerfile = eureka-server\Dockerfile
+		eureka-server\gradlew = eureka-server\gradlew
+		eureka-server\gradlew.bat = eureka-server\gradlew.bat
+		eureka-server\src\main\java\net\chrisrichardson\microservices\eurekaserver\EurekaServer.java = eureka-server\src\main\java\net\chrisrichardson\microservices\eurekaserver\EurekaServer.java
+		eureka-server\src\main\resources\application.yml = eureka-server\src\main\resources\application.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgres", "postgres", "{B2222222-2222-4222-8222-222222222222}"
+	ProjectSection(SolutionItems) = preProject
+		postgres\createdatabases.sql = postgres\createdatabases.sql
+		postgres\Dockerfile = postgres\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{C3333333-3333-4333-8333-333333333333}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\app-build.sh = scripts\app-build.sh
+		scripts\app-down.sh = scripts\app-down.sh
+		scripts\app-logs.sh = scripts\app-logs.sh
+		scripts\app-run.sh = scripts\app-run.sh
+		scripts\app.yml = scripts\app.yml
+		scripts\build-without-tests.bat = scripts\build-without-tests.bat
+		scripts\build-without-tests.sh = scripts\build-without-tests.sh
+		scripts\build.bat = scripts\build.bat
+		scripts\build.sh = scripts\build.sh
+		scripts\infra-build.sh = scripts\infra-build.sh
+		scripts\infra-down.sh = scripts\infra-down.sh
+		scripts\infra-logs.sh = scripts\infra-logs.sh
+		scripts\infra-run.sh = scripts\infra-run.sh
+		scripts\infra.yml = scripts\infra.yml
+		scripts\rabbitmq-isolated.conf = scripts\rabbitmq-isolated.conf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{D4444444-4444-4444-8444-444444444444}"
+	ProjectSection(SolutionItems) = preProject
+		Web\babel.config.js = Web\babel.config.js
+		Web\Dockerfile = Web\Dockerfile
+		Web\nginx.conf = Web\nginx.conf
+		Web\package-lock.json = Web\package-lock.json
+		Web\package.json = Web\package.json
+		Web\README.md = Web\README.md
+		Web\src\App.vue = Web\src\App.vue
+		Web\src\main.js = Web\src\main.js
+		Web\src\router.js = Web\src\router.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -409,6 +465,30 @@ Global
 		{A78157D7-6475-48D2-A150-AFDD6D7489E6}.Release|x64.Build.0 = Release|Any CPU
 		{A78157D7-6475-48D2-A150-AFDD6D7489E6}.Release|x86.ActiveCfg = Release|Any CPU
 		{A78157D7-6475-48D2-A150-AFDD6D7489E6}.Release|x86.Build.0 = Release|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Debug|x64.Build.0 = Debug|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Debug|x86.Build.0 = Debug|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Release|x64.ActiveCfg = Release|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Release|x64.Build.0 = Release|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Release|x86.ActiveCfg = Release|Any CPU
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5}.Release|x86.Build.0 = Release|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Debug|x64.Build.0 = Debug|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Debug|x86.Build.0 = Debug|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Release|x64.ActiveCfg = Release|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Release|x64.Build.0 = Release|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Release|x86.ActiveCfg = Release|Any CPU
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -441,6 +521,8 @@ Global
 		{92261686-4A6F-464E-A3E6-0F7BCAC9FE91} = {74B0D46A-C2A4-54DC-F940-E5841734F66C}
 		{B735A6AC-0D8D-4020-8665-3D77DF89B857} = {74B0D46A-C2A4-54DC-F940-E5841734F66C}
 		{A78157D7-6475-48D2-A150-AFDD6D7489E6} = {74B0D46A-C2A4-54DC-F940-E5841734F66C}
+		{FF83AD0F-407E-43CE-A894-565A94A6A6A5} = {9CE148F2-AF56-F956-698D-C38496F63749}
+		{E24C7037-55AF-4422-8F53-7F2CD59AA215} = {3CC1FCCB-28A9-B461-315A-3E15DD1501B3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F209A12C-0B47-43BC-93DD-CB99304833B8}
