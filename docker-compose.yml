@@ -1,0 +1,71 @@
+name: bth4-infrastructure
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: bth4-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bth4
+      POSTGRES_USER: bth4_user
+      POSTGRES_PASSWORD: bth4_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bth4-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bth4_user -d bth4"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: bth4-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: bth4_user
+      RABBITMQ_DEFAULT_PASS: bth4_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - bth4-net
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    container_name: bth4-elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - bth4-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+
+networks:
+  bth4-net:
+    name: bth4-net
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  elasticsearch_data:
