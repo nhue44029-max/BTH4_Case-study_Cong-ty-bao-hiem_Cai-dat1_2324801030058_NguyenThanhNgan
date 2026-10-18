@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using PricingService.Data;
 using PricingService.Domain;
 using Steeltoe.Discovery.Client;
@@ -30,11 +29,6 @@ public class Startup
 
     public void Configure(WebApplication app, IWebHostEnvironment env)
     {
-        // Kept to match the lab Startup example; Steeltoe 3.4 starts this client automatically.
-#pragma warning disable CS0618
-        app.UseDiscoveryClient();
-#pragma warning restore CS0618
-
         app.Use(async (context, next) =>
         {
             try
