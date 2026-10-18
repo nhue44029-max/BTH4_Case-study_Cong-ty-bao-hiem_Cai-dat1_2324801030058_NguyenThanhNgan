@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Alba;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace PricingService.IntegrationTest;
@@ -12,7 +13,7 @@ public class IntegrationTestsFixture : IAsyncLifetime
     {
         // The current PricingService stores its sample tariffs in memory. The HTTP test
         // exercises the real application pipeline without starting an unused database.
-        SystemUnderTest = await AlbaHost.For<global::Program>();
+        SystemUnderTest = await AlbaHost.For<global::Program>(builder => builder.UseEnvironment("Testing"));
     }
 
     public async Task DisposeAsync()

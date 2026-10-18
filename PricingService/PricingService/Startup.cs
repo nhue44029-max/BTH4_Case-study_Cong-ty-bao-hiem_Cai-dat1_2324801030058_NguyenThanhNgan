@@ -7,18 +7,22 @@ namespace PricingService;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
         Configuration = configuration;
+        Environment = environment;
     }
 
     public IConfiguration Configuration { get; }
+    private IWebHostEnvironment Environment { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers().AddNewtonsoftJson();
         services.AddHealthChecks();
-        services.AddDiscoveryClient(Configuration);
+        // HTTP tests do not need an external Eureka server.
+        if (!Environment.IsEnvironment("Testing"))
+            services.AddDiscoveryClient(Configuration);
         services.AddPricingServiceData(Configuration);
         services.AddSingleton<IDataStore, InMemoryTariffDataStore>();
         services.AddMediatR(config =>
