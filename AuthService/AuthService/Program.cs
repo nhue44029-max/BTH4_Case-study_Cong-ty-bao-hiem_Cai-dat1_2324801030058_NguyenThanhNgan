@@ -1,31 +1,28 @@
-using MediatR;
-using AuthService.Data;
+﻿using System.IO;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace AuthService;
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-builder.Services.AddHealthChecks();
-builder.Services.AddAuthServiceData(builder.Configuration);
-builder.Services.AddMediatR(config =>
-    config.RegisterServicesFromAssembly(typeof(Program).Assembly));
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    public static void Main(string[] args)
+    {
+        CreateWebHostBuilder(args).Build().Run();
+    }
+
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        var config = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("hosting.json", true)
+            .AddJsonFile("appsettings.json", true)
+            .AddCommandLine(args)
+            .Build();
+
+        return WebHost.CreateDefaultBuilder(args)
+            .UseConfiguration(config)
+            .UseStartup<Startup>();
+    }
 }
-
-app.UseAuthorization();
-
-app.MapControllers();
-app.MapHealthChecks("/health");
-
-app.Run();

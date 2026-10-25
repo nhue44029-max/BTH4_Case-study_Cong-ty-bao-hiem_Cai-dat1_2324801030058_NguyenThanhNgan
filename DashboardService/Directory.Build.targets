@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'DashboardService'">
+    <ProjectReference Remove="..\PolicyService.Api\PolicyService.Api.csproj" />
+    <Reference Include="PolicyService.Api">
+      <HintPath>..\..\PolicyService\PolicyService.Api\bin\$(Configuration)\net8.0\PolicyService.Api.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Target Name="EnsurePolicyServiceApiForDashboard" BeforeTargets="ResolveAssemblyReferences" Condition="'$(MSBuildProjectName)' == 'DashboardService'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\PolicyService\PolicyService.Api\PolicyService.Api.csproj"
+             Targets="Build" Properties="Configuration=$(Configuration)" />
+  </Target>
+</Project>

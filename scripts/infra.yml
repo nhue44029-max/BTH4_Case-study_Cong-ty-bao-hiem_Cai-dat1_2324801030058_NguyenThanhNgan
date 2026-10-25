@@ -5,6 +5,7 @@ services:
     build: ../eureka-server
     image: eureka-server
     container_name: eureka-server
+    command: --eureka.server.renewalPercentThreshold=0.1
     ports:
       - 8761:8761
 

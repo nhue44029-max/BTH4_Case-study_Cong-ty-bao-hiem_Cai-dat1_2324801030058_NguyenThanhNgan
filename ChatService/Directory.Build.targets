@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'ChatService'">
+    <ProjectReference Remove="..\PolicyService.Api\PolicyService.Api.csproj" />
+    <Reference Include="PolicyService.Api">
+      <HintPath>..\..\PolicyService\PolicyService.Api\bin\$(Configuration)\net8.0\PolicyService.Api.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <Target Name="EnsurePolicyServiceApiForChat" BeforeTargets="ResolveAssemblyReferences" Condition="'$(MSBuildProjectName)' == 'ChatService'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\PolicyService\PolicyService.Api\PolicyService.Api.csproj"
+             Targets="Build" Properties="Configuration=$(Configuration)" />
+  </Target>
+</Project>
