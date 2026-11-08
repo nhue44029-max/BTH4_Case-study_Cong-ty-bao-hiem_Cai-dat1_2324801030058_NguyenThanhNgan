@@ -9,11 +9,10 @@ namespace DashboardService.Messaging.RabbitMq;
 
 public static class RabbitInstaller
 {
-    public static IServiceCollection AddRabbitListeners(this IServiceCollection services, RabbitMqOptions options)
+    public static IServiceCollection AddRabbitListeners(this IServiceCollection services, RabbitMqOptions options, string connectionString)
     {
         var host = options.Host;
-        var connectionStr = $"host={host}:5672;username=guest;password=guest";
-        var bus = RabbitHutch.CreateBus(connectionStr);
+        var bus = RabbitHutch.CreateBus(connectionString ?? $"host={host}:5672;username=guest;password=guest");
         bus.Advanced.ExchangeDeclare("lab-dotnet-micro", ExchangeType.Topic);
         services.AddSingleton(bus);
         

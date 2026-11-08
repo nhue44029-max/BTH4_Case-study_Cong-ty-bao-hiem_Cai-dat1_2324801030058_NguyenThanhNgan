@@ -12,11 +12,9 @@ public class ElasticSearchInContainerFixture : IAsyncLifetime
 {
     private readonly ElasticsearchContainer testContainer = new ElasticsearchBuilder()
         .WithImage("elasticsearch:8.9.2")
-        .WithName("elasticsearch-892")
         .WithEnvironment("discovery.type", "single-node")
         .WithEnvironment("xpack.security.enabled", "false")
-        .WithPortBinding(9200, 9200)
-        .WithPortBinding(9300, 9300)
+        .WithPortBinding(9200, true)
         .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(9200))
         .Build();
     
@@ -34,7 +32,8 @@ public class ElasticSearchInContainerFixture : IAsyncLifetime
 
     public ElasticsearchClient ElasticClient()
     {
-        var connectionSettings = new ElasticsearchClientSettings()
+        var endpoint = new System.UriBuilder("http", testContainer.Hostname, testContainer.GetMappedPublicPort(9200)).Uri;
+        var connectionSettings = new ElasticsearchClientSettings(endpoint)
             .DefaultMappingFor<PolicyDocument>(m =>
                 m.IndexName("policy_lab_stats").IdProperty(d => d.Number));
         return new ElasticsearchClient(connectionSettings);

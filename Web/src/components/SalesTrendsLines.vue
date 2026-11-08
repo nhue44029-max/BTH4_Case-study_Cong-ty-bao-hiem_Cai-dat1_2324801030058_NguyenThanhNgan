@@ -16,48 +16,32 @@
 </template>
 
 <script>
-import SalesLines from "./SalesLines.js"
+import SalesLines from "./SalesLines.js";
+
 export default {
-    name: 'SalesTrendsLines',
-    components: {
-        SalesLines
-    },
-    props: {
-      salesTrendsData: null
-    },
-    data() {
-        return {
-            datacollection: { labels:[], datasets: [] }
-        }
-    },
-    watch: {
-        salesTrendsData: function() {
-            this.loadData();
-        }
-    },    
-    mounted() {
-        this.loadData();
-    },
-    methods: {
-      loadData() {
-            var data = {
-            labels: [],
-            datasets: [
-                {
-                    data: [],
-                    label: 'Sales (EUR)',
-                    backgroundColor: "#FF6384"
-                }
-            ]
-            };
-            this.salesTrendsData.forEach(element => {
-              data.labels.push(element.period);
-              data.datasets[0].data.push({x:element.periodDate, y:element.sales.premiumAmount});
-            });
-            this.datacollection = data;
-        }
+  name: "SalesTrendsLines",
+  components: { SalesLines },
+  props: {
+    salesTrendsData: { type: Array, required: true }
+  },
+  computed: {
+    datacollection() {
+      return {
+        labels: this.salesTrendsData.map(point => point.period),
+        datasets: [{
+          data: this.salesTrendsData.map(point => point.amount),
+          label: "Sales (EUR)",
+          borderColor: "#f34f76",
+          backgroundColor: "rgba(255, 84, 126, 0.76)",
+          pointBackgroundColor: "#f34f76",
+          cubicInterpolationMode: "monotone",
+          pointRadius: 3,
+          fill: "origin"
+        }]
+      };
     }
-}
+  }
+};
 </script>
 
 

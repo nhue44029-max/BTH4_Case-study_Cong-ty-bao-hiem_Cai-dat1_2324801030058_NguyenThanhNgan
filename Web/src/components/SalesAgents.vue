@@ -9,7 +9,8 @@
         </div>
         <div class="card-body">
             <div class="chart-wrapper">
-            <SalesBar :chart-data="datacollection"/>
+            <SalesBar v-if="datacollection.labels.length" :chart-data="datacollection"/>
+            <p v-else class="text-muted mb-0">No agent sales for these filters.</p>
             </div>
         </div>
     </div>

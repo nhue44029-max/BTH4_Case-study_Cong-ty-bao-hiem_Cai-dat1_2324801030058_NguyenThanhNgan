@@ -1,97 +1,76 @@
 <template>
-    <div class="card">
-        <div class="card-header">Products
-            <div class="card-header-actions">
-            <a class="card-header-action" href="http://www.chartjs.org" target="_blank">
-                <small class="text-muted">docs</small>
-            </a>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="chart-wrapper">
-            <sales-pie :chart-data="datacollection"/>
-            </div>
-        </div>
+  <div class="card">
+    <div class="card-header">Products</div>
+    <div class="card-body">
+      <p class="small text-muted">Sales by product for the selected period</p>
+      <sales-pie v-if="hasSales" :chart-data="chartData" @select="selectSlice" />
+      <p v-else class="text-muted">No product sales in this period.</p>
+      <ul class="list-unstyled mb-0">
+        <li v-for="(product, index) in products" :key="product.code" class="mb-1">
+          <button type="button" class="btn btn-sm btn-block text-left"
+                  :class="selectedProduct === product.code ? 'btn-light font-weight-bold' : 'btn-link'"
+                  :aria-pressed="String(selectedProduct === product.code)"
+                  @click="$emit('select', product.code)">
+            <span class="product-color" :style="{ backgroundColor: colors[index % colors.length] }" aria-hidden="true"></span>
+            {{ product.name }}
+            <span class="float-right">{{ sales(product.code).premiumAmount }} EUR · {{ sales(product.code).policiesCount }} policies</span>
+          </button>
+        </li>
+      </ul>
     </div>
+  </div>
 </template>
 
 <script>
 import SalesPie from "./SalesPie.js";
+
+const noSales = { premiumAmount: 0, policiesCount: 0 };
+
 export default {
-    name: 'SalesDistribution',
-    props: {
-        productTotals: {}
+  name: "SalesDistribution",
+  components: { SalesPie },
+  props: {
+    products: { type: Array, required: true },
+    productTotals: { type: Object, required: true },
+    selectedProduct: { type: String, required: true }
+  },
+  data() {
+    return { colors: ["#d84768", "#217db0", "#b87800", "#6574c4"] };
+  },
+  computed: {
+    hasSales() {
+      return this.products.some(product => this.sales(product.code).premiumAmount > 0);
     },
-    data() {
-        return {
-            datacollection: { labels:[], datasets: [] }
-        }
+    chartData() {
+      return {
+        labels: this.products.map(product => product.name),
+        datasets: [{
+          data: this.products.map(product => this.sales(product.code).premiumAmount),
+          backgroundColor: this.products.map((product, index) => {
+            const color = this.colors[index % this.colors.length];
+            return this.selectedProduct === "ALL" || this.selectedProduct === product.code ? color : color + "55";
+          })
+        }]
+      };
+    }
+  },
+  methods: {
+    sales(code) {
+      return this.productTotals[code] || noSales;
     },
-    watch: {
-        productTotals: function() {
-            this.loadData();
-        }
-    },
-    components: {
-        SalesPie
-    },
-    mounted() {
-        this.loadData();
-    },
-    methods: {
-        loadData() {
-            var data = {
-            labels: [],
-            datasets: [
-                {
-                    data: [],
-                    backgroundColor: [
-                        "#FF6384",
-                        "#36A2EB",
-                        "#FFCE56",
-                        "#fe12ff",
-                        "#0aff2d",
-                        "#153fff",
-                        "#ff196f",
-                        "#fffbf0"
-                    ]
-                }
-            ]
-            };
-            for (var key in this.productTotals) {
-                data.labels.push(key);
-                data.datasets[0].data.push(this.productTotals[key]);    
-            }
-            this.datacollection = data;
-        }
-    }   
-}
+    selectSlice(index) {
+      this.$emit("select", this.products[index].code);
+    }
+  }
+};
 </script>
 
-<style>
-@media (min-width: 576px) {
-  .card-columns.cols-2 {
-    -webkit-column-count: 2;
-    -moz-column-count: 2;
-    column-count: 2;
-  }
-    .card-header-actions {
-    display: inline-block;
-    float: right;
-    margin-right: -0.25rem;
-    }
-    *[dir="rtl"] .card-header-actions {
-    float: left;
-    margin-right: auto;
-    margin-left: -0.25rem;
-    }
-    .card-header-action {
-    padding: 0 0.25rem;
-    color: #73818f;
-    }
-    .card-header-action:hover {
-    color: #23282c;
-    text-decoration: none;
-    }
+<style scoped>
+.product-color {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.3rem;
+  border-radius: 2px;
 }
 </style>

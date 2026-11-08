@@ -4,11 +4,11 @@
       <div class="row">
         <div class="col text-left">
           <div>
-            <b-dropdown id="dropdown-1" v-model="filterProductsSelection" :text="filterProductsSelectionText" class="m-md-2">
+            <b-dropdown id="dropdown-1" :text="selectedProductName" class="m-md-2">
               <b-dropdown-item v-for="option in productsFilterOptions" 
-              v-bind:value="option.value" 
+              :active="option.value === selectedProduct"
               :key="option.value"
-              v-on:click="productFilterChange(option.value)">
+              @click="selectedProduct = option.value">
               {{option.text}}
               </b-dropdown-item>
             </b-dropdown>
@@ -16,15 +16,14 @@
         </div>
         <div class="col">
           <div class="float-right">
-          <b-input-group>
-            <b-input-group-prepend>
-              <b-button variant="outline-info" v-on:click="changeDatesFilter('LAST_12_MONTHS')">Last 12 Months</b-button>
-            </b-input-group-prepend>
-            <b-input-group-append>
-              <b-button variant="outline-info" v-on:click="changeDatesFilter('THIS_YEAR')">This year</b-button>
-              <b-button variant="outline-info" v-on:click="changeDatesFilter('THIS_MONTH')">This month</b-button>
-            </b-input-group-append>
-          </b-input-group>
+          <b-button-group aria-label="Sales period">
+            <b-button v-for="period in periods" :key="period.value"
+                      :variant="selectedPeriod === period.value ? 'info' : 'outline-info'"
+                      :pressed="selectedPeriod === period.value"
+                      @click="selectedPeriod = period.value">
+              {{ period.text }}
+            </b-button>
+          </b-button-group>
           </div>
         </div>
         
@@ -32,13 +31,13 @@
       </div>
     </div>
 
-    <div class="container-fluid">
-      <div class="row">
-        <div>&nbsp;</div>
-      </div>
+    <div class="container-fluid my-3" aria-live="polite">
+      <p class="mb-0">{{ selectedProductName }} · {{ dateRange.start.format('DD/MM/YYYY') }} – {{ dateRange.end.format('DD/MM/YYYY') }}</p>
+      <p v-if="loading" class="mb-0 text-muted">Loading sales data…</p>
+      <p v-else-if="error" class="mb-0 text-danger" role="alert">{{ error }}</p>
     </div>
 
-    <div class="container-fluid">
+    <div v-if="!loading && !error" class="container-fluid">
       <div class="row">
         <TotalSalesCard title="Total sales" :amount="totalAmount" icon="bitcoin" />
 
@@ -48,8 +47,8 @@
           v-for="product in products"
           :key="product.code"
           :title="product.name"
-          :amount="totalAmounts[product.code]"
-          :policiesCount="totalCounts[product.code]"
+          :amount="productSales(product.code).premiumAmount"
+          :policiesCount="productSales(product.code).policiesCount"
           :icon="product.icon"
         />
       </div>
@@ -61,10 +60,11 @@
       </div>
     </div>
 
-    <div class="container-fluid">
+    <div v-if="!loading && !error" class="container-fluid">
       <div class="card-columns cols-2">
         <SalesTrendsLines :salesTrendsData="salesTrends" />
-        <SalesDistribution :productTotals="totalAmounts" />
+        <SalesDistribution :products="products" :product-totals="totals.perProductTotal"
+                           :selected-product="selectedProduct" @select="selectedProduct = $event" />
         <SalesAgents :agentTotals="agentsTotalAmounts" />
       </div>
     </div>
@@ -77,121 +77,116 @@ import SalesAgents from "./SalesAgents";
 import SalesTrendsLines from "./SalesTrendsLines";
 import SalesDistribution from "./SalesDistribution";
 import TotalSalesCard from "./TotalSalesCard";
-import {_} from 'vue-underscore';
-import moment from 'moment';
+import moment from "moment";
+
+const noSales = { premiumAmount: 0, policiesCount: 0 };
+
 export default {
   name: "Dashboard",
-  props: {
-    msg: String
-  },
-  components: {
-    SalesAgents,
-    SalesTrendsLines,
-    SalesDistribution,
-    TotalSalesCard
-  },
+  components: { SalesAgents, SalesTrendsLines, SalesDistribution, TotalSalesCard },
   data() {
     return {
       products: [],
-      totalAmounts: {},
-      totalCounts: {},
-      totalAmount: 0,
-      totalPolicies: 0,
+      totals: { total: noSales, perProductTotal: {} },
       agentsTotalAmounts: {},
-      agentsTotalCounts: {},
-      salesTrends: [],
-      filterProductsSelection: 'ALL',
-      filterProductsSelectionText: 'All products',
-      productsFilterOptions: [
-        {text: 'All products', value: 'ALL'}
+      periodsSales: [],
+      selectedProduct: "ALL",
+      selectedPeriod: "LAST_12_MONTHS",
+      periods: [
+        { text: "Last 12 Months", value: "LAST_12_MONTHS" },
+        { text: "This year", value: "THIS_YEAR" },
+        { text: "This month", value: "THIS_MONTH" }
       ],
-      filteredPeriod: {
-        option: 'LAST_12_MONTHS',
-        startDate: null,
-        endDate: null
-      }
+      loading: true,
+      error: "",
+      requestId: 0
     };
   },
-  created: function() {
-    this.filteredPeriod.endDate = moment();
-    this.filteredPeriod.startDate = moment().subtract(12,'months');
-    HTTP.get("products").then(response => {
-      this.products = response.data;
-      this.products.forEach(product => {
-        this.productsFilterOptions.push({text: product.name, value: product.code});
-      });
-      this.fetchTotalSales();
-      this.fetchAgentsSales();
-      this.fetchSalesTrends();
-    });
+  computed: {
+    productsFilterOptions() {
+      return [
+        { text: "All products", value: "ALL" },
+        ...this.products.map(product => ({ text: product.name, value: product.code }))
+      ];
+    },
+    selectedProductName() {
+      return this.productsFilterOptions.find(option => option.value === this.selectedProduct).text;
+    },
+    dateRange() {
+      const end = moment();
+      if (this.selectedPeriod === "THIS_MONTH")
+        return { start: end.clone().startOf("month"), end, bucket: "day" };
+      const start = this.selectedPeriod === "THIS_YEAR"
+        ? end.clone().startOf("year")
+        : end.clone().startOf("month").subtract(11, "months");
+      return { start, end, bucket: "month" };
+    },
+    selectedSales() {
+      return this.selectedProduct === "ALL" ? this.totals.total : this.productSales(this.selectedProduct);
+    },
+    totalAmount() {
+      return this.selectedSales.premiumAmount;
+    },
+    totalPolicies() {
+      return this.selectedSales.policiesCount;
+    },
+    salesTrends() {
+      const { start, end, bucket } = this.dateRange;
+      const key = bucket === "day" ? "YYYY-MM-DD" : "YYYY-MM";
+      const label = bucket === "day" ? "DD/MM" : "MM/YYYY";
+      const byDate = new Map(this.periodsSales.map(period => [
+        moment.utc(period.periodDate).format(key), period.sales.premiumAmount
+      ]));
+      const series = [];
+      for (const date = start.clone(); date.isSameOrBefore(end, bucket); date.add(1, bucket)) {
+        series.push({ period: date.format(label), amount: byDate.get(date.format(key)) || 0 });
+      }
+      return series;
+    }
+  },
+  watch: {
+    selectedProduct: "refresh",
+    selectedPeriod: "refresh"
+  },
+  async created() {
+    try {
+      this.products = (await HTTP.get("products")).data;
+      await this.refresh();
+    } catch (error) {
+      this.loading = false;
+      this.error = "Could not load the product list.";
+    }
   },
   methods: {
-    fetchTotalSales() {
-      HTTP
-        .post("dashboard/total-sales", this.setupRequest({}))
-        .then(response => {
-          this.totalAmount = response.data.total.premiumAmount;
-          this.totalPolicies = response.data.total.policiesCount;
-          var amounts = {};
-          var counts = {};
-          for (var prop in response.data.perProductTotal) {
-            amounts[prop] = response.data.perProductTotal[prop].premiumAmount;
-            counts[prop] = response.data.perProductTotal[prop].policiesCount;
-          }
-          this.totalAmounts = amounts;
-          this.totalCounts = counts;
-      });
+    productSales(code) {
+      return this.totals.perProductTotal[code] || noSales;
     },
-    fetchAgentsSales() {
-      HTTP
-        .post("dashboard/agents-sales", this.setupRequest({}))
-        .then(response => {
-          var amounts = {};
-          var counts = {};
-          Object.getOwnPropertyNames(response.data.perAgentTotal).forEach(val => {
-            amounts[val] = response.data.perAgentTotal[val].premiumAmount;
-            counts[val] = response.data.perAgentTotal[val].policiesCount;
-          });
-          this.agentsTotalAmounts = amounts;
-          this.agentsTotalCounts = counts;
-      });
-    },
-    fetchSalesTrends() {
-      HTTP
-        .post("dashboard/sales-trends", this.setupRequest({}))
-        .then(response => {
-          this.salesTrends = response.data.periodsSales;
-      });
-    },
-    productFilterChange(option) {
-      this.filterProductsSelection = option;
-      this.filterProductsSelectionText = _.find(this.productsFilterOptions,i=>i.value===option).text;
-      this.fetchTotalSales();
-      this.fetchAgentsSales();
-      this.fetchSalesTrends();
-    },
-    changeDatesFilter(option) {
-      this.filteredPeriod.option = option;
-      if (option === 'LAST_12_MONTHS') {
-        this.filteredPeriod.endDate = moment();
-        this.filteredPeriod.startDate = moment().subtract(12,'months');
-      } else if (option === 'THIS_YEAR') {
-        this.filteredPeriod.endDate = moment();
-        this.filteredPeriod.startDate = moment().month(0).date(1);
-      } else if (option === 'THIS_MONTH') {
-        this.filteredPeriod.endDate = moment();
-        this.filteredPeriod.startDate = moment().date(1);
+    async refresh() {
+      const id = ++this.requestId;
+      const { start, end, bucket } = this.dateRange;
+      const dates = { salesDateFrom: start.format("YYYY-MM-DD"), salesDateTo: end.format("YYYY-MM-DD") };
+      const filters = { ...dates, productCode: this.selectedProduct === "ALL" ? null : this.selectedProduct };
+      this.loading = true;
+      this.error = "";
+      try {
+        const [totals, agents, trends] = await Promise.all([
+          HTTP.post("dashboard/total-sales", dates),
+          HTTP.post("dashboard/agents-sales", filters),
+          HTTP.post("dashboard/sales-trends", { ...filters, unit: bucket === "day" ? "Day" : "Month" })
+        ]);
+        if (id !== this.requestId) return;
+        this.totals = totals.data;
+        const amounts = {};
+        for (const [agent, sales] of Object.entries(agents.data.perAgentTotal)) {
+          amounts[agent] = sales.premiumAmount;
+        }
+        this.agentsTotalAmounts = amounts;
+        this.periodsSales = trends.data.periodsSales;
+      } catch (error) {
+        if (id === this.requestId) this.error = "Could not load sales data. Reload the dashboard to try again.";
+      } finally {
+        if (id === this.requestId) this.loading = false;
       }
-      this.fetchTotalSales();
-      this.fetchAgentsSales();
-      this.fetchSalesTrends();
-    },
-    setupRequest(request) {
-      request.salesDateFrom = moment(this.filteredPeriod.startDate).format('YYYY-MM-DD');
-      request.salesDateTo = moment(this.filteredPeriod.endDate).format('YYYY-MM-DD'); 
-      request.unit = this.filteredPeriod.option === 'THIS_MONTH' ? 'Week' : 'Month';
-      request.productCode = this.filterProductsSelection==='ALL' ? null : this.filterProductsSelection;
-      return request;
     }
   }
 };

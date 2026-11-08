@@ -20,7 +20,8 @@ public class PolicyCreatedHandler : INotificationHandler<PolicyCreated>
         var policy = new PolicyDocument
         (
             notification.PolicyNumber,
-            notification.PolicyFrom,
+            // Dashboard date filters use the sale date; older events only have the coverage date.
+            (notification.SoldAt ?? notification.PolicyFrom).Date,
             notification.PolicyTo,
             $"{notification.PolicyHolder.FirstName} {notification.PolicyHolder.LastName}",
             notification.ProductCode,

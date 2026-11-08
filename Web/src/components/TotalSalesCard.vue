@@ -6,7 +6,7 @@
             <div>
                 <div class="text-value-sm text-primary">{{amount}}</div>
                 <div class="text-muted text-uppercase font-weight-bold small">{{title}}</div>
-                <div v-if="policiesCount" class="text-muted text-uppercase font-weight-bold small">{{policiesCount}} pcs.</div>
+                <div v-if="policiesCount != null" class="text-muted text-uppercase font-weight-bold small">{{policiesCount}} pcs.</div>
             </div>
             </div>
         </div>

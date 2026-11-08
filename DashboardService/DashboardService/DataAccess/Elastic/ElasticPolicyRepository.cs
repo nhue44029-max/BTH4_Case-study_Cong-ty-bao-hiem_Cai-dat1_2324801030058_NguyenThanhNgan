@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using DashboardService.Domain;
 using Elastic.Clients.Elasticsearch;
 
@@ -48,6 +49,9 @@ public class ElasticPolicyRepository : IPolicyRepository
     {
         var adapter = AgentSalesQueryAdapter.For(query);
         var response = elasticClient.Search<PolicyDocument>(adapter.BuildQuery());
+        if (response.ApiCallDetails?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            return new AgentSalesQueryResult();
+
         return adapter.ExtractResult(response);
     }
 
@@ -55,6 +59,9 @@ public class ElasticPolicyRepository : IPolicyRepository
     {
         var adapter = TotalSalesQueryAdapter.For(query);
         var response = elasticClient.Search<PolicyDocument>(adapter.BuildQuery());
+        if (response.ApiCallDetails?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            return new TotalSalesQueryResult();
+
         return adapter.ExtractResult(response);
     }
 
@@ -62,6 +69,9 @@ public class ElasticPolicyRepository : IPolicyRepository
     {
         var adapter = SalesTrendsQueryAdapter.For(query);
         var response = elasticClient.Search<PolicyDocument>(adapter.BuildQuery());
+        if (response.ApiCallDetails?.HttpStatusCode == (int)HttpStatusCode.NotFound)
+            return new SalesTrendsResult();
+
         return adapter.ExtractResult(response);
     }
 }

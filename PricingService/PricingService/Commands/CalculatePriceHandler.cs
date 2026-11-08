@@ -14,6 +14,10 @@ public sealed class CalculatePriceHandler(IDataStore dataStore) : IRequestHandle
         if (tariff is null) throw new KeyNotFoundException($"Unknown product code {command.ProductCode}.");
 
         var answers = command.Answers.ToDictionary(answer => answer.QuestionCode, answer => answer.GetAnswer());
+        // The farm form omits flood risk. Apply the surcharge only when the caller supplies it.
+        if (string.Equals(tariff.Code, "FAI", StringComparison.OrdinalIgnoreCase))
+            answers.TryAdd("FLOOD", "NO");
+
         var calculation = new Calculation(command.ProductCode, command.PolicyFrom, command.PolicyTo,
             command.SelectedCovers, answers);
         var price = tariff.CalculatePrice(calculation);

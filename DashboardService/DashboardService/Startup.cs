@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using DashboardService.DataAccess.Elastic;
 using DashboardService.Domain;
-using DashboardService.Init;
 using DashboardService.Messaging.RabbitMq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,8 +31,9 @@ public class Startup
         services.AddMediatR(opts => opts.RegisterServicesFromAssemblyContaining<Startup>());
         services.AddElasticSearch(Configuration.GetConnectionString("ElasticSearchConnection"));
         services.AddSingleton<IPolicyRepository, ElasticPolicyRepository>();
-        services.AddRabbitListeners(Configuration.GetSection("RabbitMqOptions").Get<RabbitMqOptions>());
-        services.AddInitialSalesData();
+        services.AddRabbitListeners(
+            Configuration.GetSection("RabbitMqOptions").Get<RabbitMqOptions>(),
+            Configuration.GetConnectionString("RabbitMQ"));
         services.AddSwaggerGen();
     }
 
